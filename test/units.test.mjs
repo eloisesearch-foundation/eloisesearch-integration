@@ -115,6 +115,9 @@ test('observations keep what is comparable and nothing else', () => {
     total: { value: 1, relation: 'eq' },
     body: { result: 'created', nope: '(missing)' },
   });
+  const generated = { status: 201, body: { _id: 'c7XMLKEB9xSJnnCXLqgz', _version: 1 } };
+  assert.deepEqual(observe({ body: { _id: { type: 'string' }, _version: { exists: true } } }, generated).body,
+    { _id: 'string', _version: '(present)' }, 'matchers record what they check, not generated values');
 });
 
 test('requests: JSON bodies, NDJSON with a final newline, raw strings and query strings', () => {

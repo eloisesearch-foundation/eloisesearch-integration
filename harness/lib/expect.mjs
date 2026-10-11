@@ -239,9 +239,13 @@ export function observe(expect, response) {
     const texts = suggestionTexts(body, name);
     if (texts !== MISSING) (observation.suggest ??= {})[name] = texts;
   }
-  for (const path of Object.keys(expect?.body ?? {})) {
+  for (const [path, expected] of Object.entries(expect?.body ?? {})) {
     const value = lookup(body, path);
-    (observation.body ??= {})[path] = value === MISSING ? '(missing)' : value;
+    // For a matcher, record what it checks (a generated _id is "string"), not the
+    // value itself, so two engines that both satisfy it observe the same thing.
+    let observed = value === MISSING ? '(missing)' : value;
+    if (isMatcher(expected) && value !== MISSING) observed = expected.type ? typeOf(value) : '(present)';
+    (observation.body ??= {})[path] = observed;
   }
   return observation;
 }
