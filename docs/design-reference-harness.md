@@ -60,7 +60,7 @@ Once it exists:
 ```
 contracts/
 ├── cases/<group>.json        cases, grouped by capability (index-lifecycle, documents, ...)
-├── fixtures/<name>/          mapping.json + documents.ndjson (frozen corpus)
+├── fixtures/<name>/          mapping.json + documents.ndjson, one {"_id", "_source"} per line
 └── divergences.json          recorded differences between the references
 harness/
 ├── run.mjs                   run cases against one engine, write the report
@@ -114,7 +114,8 @@ instead of `request` and `expect`. Steps run in order; a step without `expect`
 only prepares state (its status must still be 2xx).
 
 **Requests.** `method`, `path`, optional `query` (object, sent as query string),
-and a body as either `body` (JSON, sent as `application/json`) or `ndjson` (an
+and a body as either `body` (JSON, sent as `application/json`; a string is sent
+verbatim, for malformed-JSON cases) or `ndjson` (an
 array of objects, sent one per line with a trailing newline as
 `application/x-ndjson`, as the Bulk API requires).
 
