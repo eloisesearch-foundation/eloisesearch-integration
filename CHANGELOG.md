@@ -45,6 +45,12 @@ changes to the cases, the corpus and the harness that affect what is verified.
 - Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
   pass on both; they differ only in D-001 and D-002. Updated with the
   `query-string` and settings cases: 61 cases, still only D-001 and D-002.
+- `mappings` cases for dynamic mapping: `false` and `strict` as in the
+  references; without `dynamic`, Eloisesearch behaves as `false` and rejects an
+  explicit `true` (D-004, a recorded scope decision).
+- Search cases for the remaining MVP query features: a `keyword` multi-field
+  with `term`, `match` with `operator`, `multi_match`, `bool` with
+  `minimum_should_match`, and the default `size` of 10.
 - `query-string` cases over the movies fixture (phrases, AND, `+`, exclusions
   without switching the default operator, field and range syntax, groups,
   prefix, fuzzy, and two broken queries that must be a 400, never a 5xx).
