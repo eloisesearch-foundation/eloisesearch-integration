@@ -1,0 +1,32 @@
+# Reference engines for the compatibility harness. Local and CI use only:
+# single node, security disabled, no persistent volume.
+#
+# Versions are pinned and must match harness/lib/engines.mjs; a run refuses a
+# server whose version differs. Moving a reference to a newer release is a
+# deliberate change (see docs/design-reference-harness.md).
+
+name: eloisesearch-reference
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.4
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.ml.enabled: "false"
+      # A nearly full laptop disk must not turn indexes read-only mid-run.
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "127.0.0.1:9200:9200"
+
+  opensearch:
+    image: opensearchproject/opensearch:3.9.0
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "127.0.0.1:9201:9200"

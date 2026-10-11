@@ -1,0 +1,498 @@
+{
+  "group": "index-lifecycle",
+  "description": "Create, inspect and delete indexes, and the errors around them. Every index is a fresh scratch index.",
+  "fixture": null,
+  "cases": [
+    {
+      "id": "create-index",
+      "capability": "index.create",
+      "description": "Creating an index with settings and mappings is acknowledged and names the index.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+          },
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              },
+              "genres": {
+                "type": "keyword"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "acknowledged": true,
+          "shards_acknowledged": true,
+          "index": "{{scratch}}"
+        }
+      }
+    },
+    {
+      "id": "create-existing-index",
+      "capability": "index.create",
+      "description": "Creating an index that already exists is a 400 resource_already_exists_exception.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "expect": {
+            "status": 400,
+            "error": {
+              "type": "resource_already_exists_exception",
+              "root_cause_type": "resource_already_exists_exception"
+            },
+            "body": {
+              "status": 400
+            },
+            "shape": [
+              "error.root_cause[].type",
+              "error.root_cause[].reason",
+              "error.type",
+              "error.reason",
+              "status"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "create-index-invalid-name",
+      "capability": "index.create",
+      "description": "An uppercase index name is rejected with invalid_index_name_exception.",
+      "request": {
+        "method": "PUT",
+        "path": "/Contract-{{run}}-Invalid",
+        "body": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+          },
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              },
+              "genres": {
+                "type": "keyword"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "invalid_index_name_exception",
+          "root_cause_type": "invalid_index_name_exception"
+        },
+        "body": {
+          "status": 400
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "create-index-unknown-setting",
+      "capability": "index.create",
+      "description": "An unknown index setting is rejected, never silently ignored.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "index": {
+              "no_such_setting": 1
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "illegal_argument_exception",
+          "root_cause_type": "illegal_argument_exception"
+        },
+        "body": {
+          "status": 400
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      },
+      "engines": {
+        "opensearch": {
+          "expect": {
+            "error": {
+              "type": "settings_exception",
+              "root_cause_type": "settings_exception"
+            }
+          },
+          "divergence": "D-001"
+        }
+      }
+    },
+    {
+      "id": "create-index-unknown-field-type",
+      "capability": "index.create",
+      "description": "A mapping with an unknown field type is rejected.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "no_such_type"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "mapper_parsing_exception",
+          "root_cause_type": "mapper_parsing_exception"
+        },
+        "body": {
+          "status": 400
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "create-index-malformed-json",
+      "capability": "index.create",
+      "description": "A body that is not valid JSON is a 400 with the error envelope. Each reference names the parse error differently (D-002), so the type is pinned per reference.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": "{\"settings\": "
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "status": 400
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      },
+      "engines": {
+        "elasticsearch": {
+          "expect": {
+            "error": {
+              "type": "x_content_e_o_f_exception"
+            }
+          },
+          "divergence": "D-002"
+        },
+        "opensearch": {
+          "expect": {
+            "error": {
+              "type": "parse_exception"
+            }
+          },
+          "divergence": "D-002"
+        }
+      }
+    },
+    {
+      "id": "get-index",
+      "capability": "index.get",
+      "description": "Inspecting an index returns its mappings and settings under its name.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "{{scratch}}.mappings.properties.title.type": "text",
+              "{{scratch}}.mappings.properties.genres.type": "keyword",
+              "{{scratch}}.settings.index.number_of_shards": "1",
+              "{{scratch}}.settings.index.number_of_replicas": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "get-missing-index",
+      "capability": "index.get",
+      "description": "Inspecting an index that does not exist is a 404 index_not_found_exception.",
+      "request": {
+        "method": "GET",
+        "path": "/{{scratch}}"
+      },
+      "expect": {
+        "status": 404,
+        "error": {
+          "type": "index_not_found_exception",
+          "root_cause_type": "index_not_found_exception"
+        },
+        "body": {
+          "status": 404
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "head-index",
+      "capability": "index.exists",
+      "description": "HEAD answers 200 for an existing index and 404 for a missing one, without a body.",
+      "steps": [
+        {
+          "request": {
+            "method": "HEAD",
+            "path": "/{{scratch}}"
+          },
+          "expect": {
+            "status": 404
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "HEAD",
+            "path": "/{{scratch}}"
+          },
+          "expect": {
+            "status": 200
+          }
+        }
+      ]
+    },
+    {
+      "id": "delete-index",
+      "capability": "index.delete",
+      "description": "Deleting an index is acknowledged and the index is gone afterwards.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "DELETE",
+            "path": "/{{scratch}}"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "acknowledged": true
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}"
+          },
+          "expect": {
+            "status": 404,
+            "error": {
+              "type": "index_not_found_exception",
+              "root_cause_type": "index_not_found_exception"
+            },
+            "body": {
+              "status": 404
+            },
+            "shape": [
+              "error.root_cause[].type",
+              "error.root_cause[].reason",
+              "error.type",
+              "error.reason",
+              "status"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "delete-missing-index",
+      "capability": "index.delete",
+      "description": "Deleting an index that does not exist is a 404 index_not_found_exception.",
+      "request": {
+        "method": "DELETE",
+        "path": "/{{scratch}}"
+      },
+      "expect": {
+        "status": 404,
+        "error": {
+          "type": "index_not_found_exception",
+          "root_cause_type": "index_not_found_exception"
+        },
+        "body": {
+          "status": 404
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      }
+    }
+  ]
+}

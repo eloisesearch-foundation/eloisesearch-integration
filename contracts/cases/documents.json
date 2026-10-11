@@ -1,0 +1,1126 @@
+{
+  "group": "documents",
+  "description": "Index, replace, read and delete documents by ID; bulk; refresh and visibility. Every index is a fresh scratch index with refresh_interval -1 unless a case says otherwise, so visibility never depends on timing.",
+  "fixture": null,
+  "cases": [
+    {
+      "id": "index-document",
+      "capability": "document.index",
+      "description": "Indexing a new document by ID is a 201 created with version 1.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          },
+          "expect": {
+            "status": 201,
+            "shape": [
+              "_index",
+              "_id",
+              "_version",
+              "result",
+              "_shards.total",
+              "_shards.successful",
+              "_shards.failed",
+              "_seq_no",
+              "_primary_term"
+            ],
+            "body": {
+              "_index": "{{scratch}}",
+              "_id": "1",
+              "_version": 1,
+              "result": "created",
+              "_shards.total": 1,
+              "_shards.successful": 1,
+              "_shards.failed": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "replace-document",
+      "capability": "document.index",
+      "description": "Indexing the same ID again replaces the document: 200 updated, version 2, and GET returns the new source.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man 2",
+              "genres": [
+                "Action"
+              ],
+              "year": 2004
+            }
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_id": "1",
+              "_version": 2,
+              "result": "updated"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "found": true,
+              "_version": 2,
+              "_source.title": "Spider-Man 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "index-document-generated-id",
+      "capability": "document.index",
+      "description": "POST /{index}/_doc creates a document with a generated string ID.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_doc",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          },
+          "expect": {
+            "status": 201,
+            "body": {
+              "result": "created",
+              "_version": 1,
+              "_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "get-document-realtime",
+      "capability": "document.get",
+      "description": "GET by ID sees an acknowledged write before any refresh, with the source as indexed.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_index": "{{scratch}}",
+              "_id": "1",
+              "found": true,
+              "_version": 1,
+              "_source": {
+                "title": "Spider-Man",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2002
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "get-missing-document",
+      "capability": "document.get",
+      "description": "GET of an ID that does not exist is a 404 with found false, not an error envelope.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/404"
+          },
+          "expect": {
+            "status": 404,
+            "body": {
+              "_index": "{{scratch}}",
+              "_id": "404",
+              "found": false,
+              "error": {
+                "absent": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "get-document-missing-index",
+      "capability": "document.get",
+      "description": "GET of a document in an index that does not exist is a 404 index_not_found_exception.",
+      "request": {
+        "method": "GET",
+        "path": "/{{scratch}}/_doc/1"
+      },
+      "expect": {
+        "status": 404,
+        "error": {
+          "type": "index_not_found_exception",
+          "root_cause_type": "index_not_found_exception"
+        },
+        "body": {
+          "status": 404
+        },
+        "shape": [
+          "error.root_cause[].type",
+          "error.root_cause[].reason",
+          "error.type",
+          "error.reason",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "get-document-source-filtering",
+      "capability": "document.get",
+      "description": "_source_includes and _source_excludes filter the returned source.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1",
+            "query": {
+              "_source_includes": "title,year"
+            }
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_source": {
+                "title": "Spider-Man",
+                "year": 2002
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1",
+            "query": {
+              "_source_excludes": "genres"
+            }
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_source": {
+                "title": "Spider-Man",
+                "year": 2002
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "delete-document",
+      "capability": "document.delete",
+      "description": "Deleting a document is a 200 deleted; GET then answers found false.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "DELETE",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_id": "1",
+              "result": "deleted",
+              "_version": 2
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 404,
+            "body": {
+              "found": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "delete-missing-document",
+      "capability": "document.delete",
+      "description": "Deleting an ID that does not exist is a 404 with result not_found.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "DELETE",
+            "path": "/{{scratch}}/_doc/404"
+          },
+          "expect": {
+            "status": 404,
+            "body": {
+              "_id": "404",
+              "result": "not_found"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "create-only-conflict",
+      "capability": "document.create",
+      "description": "_create and op_type=create refuse an ID that exists with 409 version_conflict_engine_exception.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_create/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          },
+          "expect": {
+            "status": 201,
+            "body": {
+              "result": "created"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_create/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          },
+          "expect": {
+            "status": 409,
+            "error": {
+              "type": "version_conflict_engine_exception",
+              "root_cause_type": "version_conflict_engine_exception"
+            },
+            "body": {
+              "status": 409
+            },
+            "shape": [
+              "error.root_cause[].type",
+              "error.root_cause[].reason",
+              "error.type",
+              "error.reason",
+              "status"
+            ]
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            },
+            "query": {
+              "op_type": "create"
+            }
+          },
+          "expect": {
+            "status": 409,
+            "error": {
+              "type": "version_conflict_engine_exception",
+              "root_cause_type": "version_conflict_engine_exception"
+            },
+            "body": {
+              "status": 409
+            },
+            "shape": [
+              "error.root_cause[].type",
+              "error.root_cause[].reason",
+              "error.type",
+              "error.reason",
+              "status"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "bulk-mixed-actions",
+      "capability": "document.bulk",
+      "description": "A bulk request reports each item: created, a create conflict and a delete of a missing ID, with errors true.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_bulk",
+            "ndjson": [
+              {
+                "index": {
+                  "_id": "1"
+                }
+              },
+              {
+                "title": "Spider-Man",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2002
+              },
+              {
+                "create": {
+                  "_id": "2"
+                }
+              },
+              {
+                "title": "Spider-Man 2",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2004
+              },
+              {
+                "create": {
+                  "_id": "1"
+                }
+              },
+              {
+                "title": "Spider-Man",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2002
+              },
+              {
+                "delete": {
+                  "_id": "3"
+                }
+              }
+            ]
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "errors": true,
+              "items[0].index._id": "1",
+              "items[0].index.status": 201,
+              "items[0].index.result": "created",
+              "items[1].create._id": "2",
+              "items[1].create.status": 201,
+              "items[2].create._id": "1",
+              "items[2].create.status": 409,
+              "items[2].create.error.type": "version_conflict_engine_exception",
+              "items[3].delete._id": "3",
+              "items[3].delete.status": 404,
+              "items[3].delete.result": "not_found"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "bulk-index-in-action",
+      "capability": "document.bulk",
+      "description": "POST /_bulk takes the index from each action line and refresh=true makes the batch searchable.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/_bulk",
+            "query": {
+              "refresh": "true"
+            },
+            "ndjson": [
+              {
+                "index": {
+                  "_index": "{{scratch}}",
+                  "_id": "1"
+                }
+              },
+              {
+                "title": "Spider-Man",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2002
+              },
+              {
+                "index": {
+                  "_index": "{{scratch}}",
+                  "_id": "2"
+                }
+              },
+              {
+                "title": "Spider-Man 2",
+                "genres": [
+                  "Action"
+                ],
+                "year": 2004
+              }
+            ]
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "errors": false,
+              "items[0].index._index": "{{scratch}}",
+              "items[1].index.status": 201
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match_all": {}
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": {
+                "value": 2,
+                "relation": "eq"
+              },
+              "ids_exact": [
+                "1",
+                "2"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "refresh-makes-visible",
+      "capability": "index.refresh",
+      "description": "With refreshes disabled, a durable write is not searchable until POST /{index}/_refresh.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match_all": {}
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 0
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_refresh"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_shards.failed": 0
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match_all": {}
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 1,
+              "ids_exact": [
+                "1"
+              ]
+            },
+            "shape": [
+              "hits.total.value",
+              "hits.total.relation",
+              "hits.hits[]._index",
+              "hits.hits[]._id",
+              "hits.hits[]._source",
+              "_shards.total"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "write-refresh-true",
+      "capability": "document.index",
+      "description": "refresh=true on a write makes it searchable when the response arrives.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "-1"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            },
+            "query": {
+              "refresh": "true"
+            }
+          },
+          "expect": {
+            "status": 201,
+            "body": {
+              "forced_refresh": true
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match_all": {}
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 1,
+              "ids_exact": [
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "write-refresh-wait-for",
+      "capability": "document.index",
+      "description": "refresh=wait_for returns once a scheduled refresh covers the write, so it is searchable afterwards.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0,
+                "refresh_interval": "1s"
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  },
+                  "genres": {
+                    "type": "keyword"
+                  },
+                  "year": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "body": {
+              "title": "Spider-Man",
+              "genres": [
+                "Action"
+              ],
+              "year": 2002
+            },
+            "query": {
+              "refresh": "wait_for"
+            }
+          },
+          "expect": {
+            "status": 201,
+            "body": {
+              "result": "created"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match_all": {}
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 1,
+              "ids_exact": [
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
