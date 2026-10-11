@@ -92,4 +92,6 @@ the maintainer without squashing. Agents never push to `main`, merge or tag.
 ## Documentation map
 
 - [`README.md`](README.md): what this repository is for.
+- [`docs/design-reference-harness.md`](docs/design-reference-harness.md): case
+  format, expectations, divergences, runs and reports.
 - [`CHANGELOG.md`](CHANGELOG.md): changes to what is verified.
