@@ -9,11 +9,14 @@ and which will not. This repository answers that with tests that run the same
 HTTP requests against the reference servers and against Eloisesearch, over a
 small, frozen movie corpus, and with the reports those runs produce.
 
-> **Status:** roadmap Phase 0. 44 cases (index lifecycle, documents, bulk,
-> refresh, and the movie-search requests over a frozen corpus) pass against
-> Elasticsearch 9.5.4 and OpenSearch 3.9.0; their reviewed baselines are in
-> `contracts/baselines/`. Eloisesearch runs are report-only until its API
-> exists. See the
+> **Status:** Phase 0 (the contract) is done. 70 cases (index lifecycle and
+> settings, documents, bulk and refresh, dynamic mapping, and the movie-search
+> requests with `simple_query_string` and `query_string` over a frozen corpus)
+> pass against Elasticsearch 9.5.4 and OpenSearch 3.9.0; their reviewed
+> baselines are in `contracts/baselines/`. Runs against Eloisesearch are
+> report-only for now: a capability becomes Supported in the
+> [compatibility matrix](https://github.com/eloisesearch-foundation/eloisesearch/blob/main/docs/api-contract.md)
+> only when Eloisesearch itself passes its cases. See the
 > [roadmap](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md).
 
 ## What lives here
