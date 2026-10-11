@@ -52,7 +52,7 @@ export async function startFakeEngine({ distribution = 'elasticsearch', version 
       try {
         body = JSON.parse(text);
       } catch {
-        return error(400, 'x_content_parse_exception', 'malformed JSON');
+        return error(400, 'x_content_e_o_f_exception', 'malformed JSON');
       }
     }
 

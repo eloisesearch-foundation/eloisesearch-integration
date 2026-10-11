@@ -189,6 +189,17 @@
           "error.reason",
           "status"
         ]
+      },
+      "engines": {
+        "opensearch": {
+          "expect": {
+            "error": {
+              "type": "settings_exception",
+              "root_cause_type": "settings_exception"
+            }
+          },
+          "divergence": "D-001"
+        }
       }
     },
     {
@@ -229,7 +240,7 @@
     {
       "id": "create-index-malformed-json",
       "capability": "index.create",
-      "description": "A body that is not valid JSON is a 400 with the error envelope; the exact type is recorded by the baseline.",
+      "description": "A body that is not valid JSON is a 400 with the error envelope. Each reference names the parse error differently (D-002), so the type is pinned per reference.",
       "request": {
         "method": "PUT",
         "path": "/{{scratch}}",
@@ -247,6 +258,24 @@
           "error.reason",
           "status"
         ]
+      },
+      "engines": {
+        "elasticsearch": {
+          "expect": {
+            "error": {
+              "type": "x_content_e_o_f_exception"
+            }
+          },
+          "divergence": "D-002"
+        },
+        "opensearch": {
+          "expect": {
+            "error": {
+              "type": "parse_exception"
+            }
+          },
+          "divergence": "D-002"
+        }
       }
     },
     {

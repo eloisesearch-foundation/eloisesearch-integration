@@ -26,5 +26,9 @@ changes to the cases, the corpus and the harness that affect what is verified.
   port 9200, OpenSearch 3.9.0 on port 9201) with `make reference-up`,
   `reference-test`, `reference-report` and `reference-down`, and a CI job per
   reference that uploads its reports.
+- Divergence register (`contracts/divergences.json`) with the first two
+  differences found by the reference run: the error type for an unknown index
+  setting (D-001, Eloisesearch follows Elasticsearch) and for malformed JSON
+  (D-002, status and envelope only).
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main

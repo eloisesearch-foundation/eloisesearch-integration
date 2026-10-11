@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "D-001",
+    "capability": "index.create",
+    "cases": [
+      "create-index-unknown-setting"
+    ],
+    "elasticsearch": "400 illegal_argument_exception (root cause illegal_argument_exception)",
+    "opensearch": "400 settings_exception (root cause settings_exception)",
+    "decision": "follow-elasticsearch",
+    "evidence": "First reference run, 2026-10-11: both reject the setting with 400 and the error envelope; only the error type differs.",
+    "eloisesearch": "400 illegal_argument_exception, the primary reference's type."
+  },
+  {
+    "id": "D-002",
+    "capability": "index.create",
+    "cases": [
+      "create-index-malformed-json"
+    ],
+    "elasticsearch": "400 x_content_e_o_f_exception for a truncated JSON body",
+    "opensearch": "400 parse_exception for the same body",
+    "decision": "partial",
+    "evidence": "First reference run, 2026-10-11: same status and envelope; the type names each engine's JSON parser error.",
+    "eloisesearch": "400 with the error envelope; the type is not part of the contract (parser-specific in both references). Clients should branch on the status."
+  }
+]
