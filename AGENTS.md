@@ -20,10 +20,12 @@ highlighting and pagination. The cases cover what that app needs, nothing more.
 ## Repository layout
 
 ```
-contracts/      corpus, mapping and cases, as requests in the compatible API
-harness/        the runner (Node 22, no dependencies)
-scripts/        repository checks
-docs/           design documents
+contracts/            cases, fixtures and the divergence register
+harness/              the runner and its commands (Node 22, no dependencies)
+test/                 unit tests of the harness, with an in-process fake engine
+compose.reference.yml the pinned reference engines
+scripts/              repository checks
+docs/                 design documents
 ```
 
 Sibling repositories, the roadmap and the cross-repository conventions are in
@@ -32,11 +34,16 @@ Sibling repositories, the roadmap and the cross-repository conventions are in
 ## Commands
 
 ```bash
-make check     # what CI runs
-make help      # everything else
+make check             # what CI runs: unit tests, case validation, changelog
+make reference-up      # pinned references in Docker (REF=elasticsearch|opensearch)
+make reference-test    # run the cases against them
+make reference-report  # side-by-side summary in reports/summary.md
+make reference-down
+make help              # everything else
 ```
 
-Run `make check` before saying a change is done. If you could not run it, say so.
+Run `make check` before saying a change is done. A change to a case is done only
+after it has also run against both references (locally or in CI); say which.
 
 ## Invariants (do not violate)
 
