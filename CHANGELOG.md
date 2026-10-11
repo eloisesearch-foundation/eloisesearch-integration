@@ -39,5 +39,8 @@ changes to the cases, the corpus and the harness that affect what is verified.
   deterministic browse order, pagination, `_source` filtering, facets,
   highlighting, completion suggestions and three incomplete user queries.
   Expected IDs are derived from the corpus.
+- `make reference-baseline` writes `contracts/baselines/<engine>-<version>.json`
+  from clean reference runs: normalized observations without run ids or
+  generated values, so a re-run or a reference upgrade shows as a plain diff.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main

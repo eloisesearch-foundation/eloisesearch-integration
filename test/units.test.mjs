@@ -147,3 +147,20 @@ test('index names are valid and run ids can be removed from observations', () =>
   assert.equal(scratchName('ab12', 'Create_Index!'), 'contract-ab12-create_index-');
   assert.deepEqual(withoutRunId({ path: '/contract-ab12-x', other: 'ab12' }, 'ab12'), { path: '/contract-{{run}}-x', other: 'ab12' });
 });
+
+test('a baseline is stable across runs and refuses an unclean run', async () => {
+  const { baselineOf } = await import('../harness/lib/baseline.mjs');
+  const report = run => ({
+    format: 1, engine: 'opensearch', identity: { version: '3.9.0' }, run,
+    summary: { pass: 2, fail: 0, error: 0 },
+    cases: [
+      { group: 'g', id: 'b', steps: [{ observed: { status: 200, body: { index: `contract-${run}-b` } } }] },
+      { group: 'g', id: 'a', steps: [{ observed: { status: 404 } }] },
+    ],
+  });
+  const first = baselineOf(report('aaaa1111'));
+  assert.deepEqual(first, baselineOf(report('bbbb2222')), 'same version, same baseline, whatever the run id');
+  assert.deepEqual(Object.keys(first.cases), ['g/a', 'g/b']);
+  assert.deepEqual(first.cases['g/b'], [{ status: 200, body: { index: 'contract-{{run}}-b' } }]);
+  assert.throws(() => baselineOf({ ...report('c'), summary: { pass: 1, fail: 1, error: 0 } }), /only a clean run/);
+});

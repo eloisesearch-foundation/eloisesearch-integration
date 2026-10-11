@@ -38,6 +38,7 @@ free memory.
 make reference-up        # start Elasticsearch 9.5.4 (:9200) and OpenSearch 3.9.0 (:9201)
 make reference-test      # run every case against both; reports in reports/
 make reference-report    # reports/summary.md: one column per engine
+make reference-baseline  # contracts/baselines/: reviewed evidence, committed
 make reference-down      # stop them and remove their data
 ```
 
