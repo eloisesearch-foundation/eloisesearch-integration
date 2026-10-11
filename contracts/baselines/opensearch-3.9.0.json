@@ -2,7 +2,7 @@
   "format": 1,
   "engine": "opensearch",
   "version": "3.9.0",
-  "cases_passed": 44,
+  "cases_passed": 70,
   "cases": {
     "documents/bulk-index-in-action": [
       {
@@ -332,6 +332,14 @@
         }
       }
     ],
+    "index-lifecycle/create-index-default-settings": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
     "index-lifecycle/create-index-invalid-name": [
       {
         "status": 400,
@@ -347,6 +355,30 @@
         "error_type": "parse_exception",
         "body": {
           "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index-one-replica": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
+    "index-lifecycle/create-index-two-replicas": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
+    "index-lifecycle/create-index-two-shards": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
         }
       }
     ],
@@ -429,6 +461,252 @@
         "status": 200
       }
     ],
+    "mappings/dynamic-default": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "title": "Spider-Man",
+            "tagline": "with great power"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "mappings/dynamic-false": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "title": "Spider-Man",
+            "tagline": "with great power"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "ids": [],
+        "total": {
+          "value": 0,
+          "relation": "eq"
+        }
+      }
+    ],
+    "mappings/dynamic-strict": [
+      {
+        "status": 200
+      },
+      {
+        "status": 400,
+        "error_type": "strict_dynamic_mapping_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "mappings/dynamic-true-explicit": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
+    "query-string/qs-and": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-boolean-groups": [
+      {
+        "status": 200,
+        "ids": [
+          "1003",
+          "1006"
+        ],
+        "total": {
+          "value": 2,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-excluded-term": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-field": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "1005",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-fuzzy": [
+      {
+        "status": 200,
+        "ids": [
+          "24428"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-malformed-incomplete-group": [
+      {
+        "status": 400,
+        "error_type": "search_phase_execution_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "query-string/qs-malformed-unclosed-quote": [
+      {
+        "status": 400,
+        "error_type": "search_phase_execution_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "query-string/qs-or": [
+      {
+        "status": 200,
+        "ids": [
+          "1003",
+          "1002",
+          "1001",
+          "634649",
+          "315635"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-phrase": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-phrase-exclusion": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 3,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-range": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "1003",
+          "1002",
+          "1006",
+          "1005",
+          "907001"
+        ],
+        "total": {
+          "value": 6,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-required": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-wildcard": [
+      {
+        "status": 200,
+        "ids": [
+          "1006"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/accent-folding": [
       {
         "status": 200,
@@ -449,6 +727,19 @@
         ],
         "total": {
           "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/bool-minimum-should-match": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635"
+        ],
+        "total": {
+          "value": 2,
           "relation": "eq"
         }
       }
@@ -565,6 +856,27 @@
         }
       }
     ],
+    "search/default-size": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635",
+          "557",
+          "559",
+          "24428",
+          "1001",
+          "1003",
+          "1002",
+          "2002",
+          "999"
+        ],
+        "total": {
+          "value": 15,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/excluded-term": [
       {
         "status": 200,
@@ -655,6 +967,20 @@
         }
       }
     ],
+    "search/match-operator-and": [
+      {
+        "status": 200,
+        "ids": [
+          "315635",
+          "557",
+          "559"
+        ],
+        "total": {
+          "value": 3,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/minimum-rating": [
       {
         "status": 200,
@@ -671,6 +997,18 @@
         ],
         "total": {
           "value": 9,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/multi-match-and": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
           "relation": "eq"
         }
       }
@@ -771,6 +1109,18 @@
             "Spider-Man",
             "Spider-Man 3"
           ]
+        }
+      }
+    ],
+    "search/term-keyword-subfield": [
+      {
+        "status": 200,
+        "ids": [
+          "557"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
         }
       }
     ],

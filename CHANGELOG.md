@@ -43,6 +43,21 @@ changes to the cases, the corpus and the harness that affect what is verified.
   from clean reference runs: normalized observations without run ids or
   generated values, so a re-run or a reference upgrade shows as a plain diff.
 - Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
-  pass on both; they differ only in D-001 and D-002.
+  pass on both; they differ only in D-001 and D-002. Updated with the
+  `query-string`, settings, `mappings` and the remaining query cases: 70 cases,
+  still only D-001 and D-002.
+- `mappings` cases for dynamic mapping: `false` and `strict` as in the
+  references; without `dynamic`, Eloisesearch behaves as `false` and rejects an
+  explicit `true` (D-004, a recorded scope decision).
+- Search cases for the remaining MVP query features: a `keyword` multi-field
+  with `term`, `match` with `operator`, `multi_match`, `bool` with
+  `minimum_should_match`, and the default `size` of 10.
+- `query-string` cases over the movies fixture (phrases, AND, `+`, exclusions
+  without switching the default operator, field and range syntax, groups,
+  prefix, fuzzy, and two broken queries that must be a 400, never a 5xx).
+- Index settings cases: one shard with 0 or 1 replicas is accepted; more shards
+  or replicas are rejected by Eloisesearch while the references accept them
+  (D-003, a recorded scope decision). An engine override can now set a key to
+  `null` to remove that check.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main

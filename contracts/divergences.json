@@ -22,5 +22,31 @@
     "decision": "partial",
     "evidence": "First reference run, 2026-10-11: same status and envelope; the type names each engine's JSON parser error.",
     "eloisesearch": "400 with the error envelope; the type is not part of the contract (parser-specific in both references). Clients should branch on the status."
+  },
+  {
+    "id": "D-003",
+    "capability": "index.settings",
+    "cases": [
+      "create-index-two-shards",
+      "create-index-two-replicas"
+    ],
+    "elasticsearch": "200: creates the index with the requested shards and replicas (replicas stay unassigned on one node)",
+    "opensearch": "200: same as Elasticsearch",
+    "decision": "unsupported",
+    "evidence": "Phase 0 scope decision, 2026-10-11: single node, one shard per index; number_of_replicas 0 and 1 are accepted, other values are rejected rather than silently ignored.",
+    "eloisesearch": "400 illegal_argument_exception for number_of_shards other than 1 or number_of_replicas above 1."
+  },
+  {
+    "id": "D-004",
+    "capability": "mapping.dynamic",
+    "cases": [
+      "dynamic-default",
+      "dynamic-true-explicit"
+    ],
+    "elasticsearch": "dynamic defaults to true: an undeclared field is added to the mapping with an inferred type and becomes searchable; explicit dynamic: true is accepted",
+    "opensearch": "same as Elasticsearch",
+    "decision": "partial",
+    "evidence": "Phase 0 scope decision, 2026-10-11: no type inference in the MVP. dynamic false and strict behave as in the references.",
+    "eloisesearch": "Without dynamic, the index behaves as dynamic: false (GET /{index} reports it); undeclared fields stay in _source and are not searchable. Explicit dynamic: true is a 400 illegal_argument_exception until a later phase."
   }
 ]

@@ -1839,6 +1839,209 @@
           "aggregations.genres.buckets"
         ]
       }
+    },
+    {
+      "id": "term-keyword-subfield",
+      "capability": "mapping.multi_fields",
+      "description": "The title.keyword multi-field matches the exact, unanalyzed title only.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "size": 50,
+          "query": {
+            "term": {
+              "title.keyword": "Spider-Man"
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "557"
+          ]
+        }
+      }
+    },
+    {
+      "id": "match-operator-and",
+      "capability": "query.match",
+      "description": "match with operator and requires every analyzed term in the field.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "size": 50,
+          "query": {
+            "match": {
+              "overview": {
+                "query": "peter parker",
+                "operator": "and"
+              }
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "557",
+            "559",
+            "315635"
+          ]
+        }
+      }
+    },
+    {
+      "id": "multi-match-and",
+      "capability": "query.multi_match",
+      "description": "multi_match best_fields with operator and needs both terms in one field: only Space Adventure has both in its title.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "size": 50,
+          "query": {
+            "multi_match": {
+              "query": "space adventure",
+              "fields": [
+                "title",
+                "overview"
+              ],
+              "operator": "and"
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "1003"
+          ]
+        }
+      }
+    },
+    {
+      "id": "bool-minimum-should-match",
+      "capability": "query.bool",
+      "description": "minimum_should_match 2 of three genre clauses: only movies with at least two of Action, Adventure and Comedy.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "size": 50,
+          "query": {
+            "bool": {
+              "should": [
+                {
+                  "term": {
+                    "genres": "Action"
+                  }
+                },
+                {
+                  "term": {
+                    "genres": "Adventure"
+                  }
+                },
+                {
+                  "term": {
+                    "genres": "Comedy"
+                  }
+                }
+              ],
+              "minimum_should_match": 2
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "634649",
+            "315635"
+          ]
+        }
+      }
+    },
+    {
+      "id": "default-size",
+      "capability": "search.from_size",
+      "description": "Without size, a search returns the first 10 hits; the total still counts every match.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "query": {
+            "match_all": {}
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "total": {
+            "value": 15,
+            "relation": "eq"
+          },
+          "ids_ordered": [
+            "634649",
+            "315635",
+            "557",
+            "559",
+            "24428",
+            "1001",
+            "1003",
+            "1002",
+            "2002",
+            "999"
+          ]
+        }
+      }
     }
   ]
 }

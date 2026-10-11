@@ -1,7 +1,7 @@
-// Tests over the committed contracts: they must validate; the groups that need
-// no fixture must run cleanly against the fake engine (which checks the harness,
-// not the references); and every fixture must load. Search cases need a real
-// engine: they are verified against the references, not here.
+// Tests over the committed contracts: they must validate; the index and
+// document groups must run cleanly against the fake engine (which checks the
+// harness, not the references); and every fixture must load. Search and
+// mapping cases need a real engine: they are verified against the references.
 
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -25,8 +25,13 @@ test('the committed contracts are valid', async () => {
   assert.deepEqual(validateGroups(groups, await loadDivergences(paths.divergences), await fixtureNames()), []);
 });
 
-test('the committed fixture-free cases run end to end and clean up every index they create', async () => {
-  const groups = (await loadGroups(paths.cases)).filter(group => group.fixture == null);
+// The groups whose behavior the fake engine implements. Search and mapping
+// semantics (analysis, queries, dynamic mapping) are verified on the references.
+const FAKE_GROUPS = ['index-lifecycle', 'documents'];
+
+test('the index and document cases run end to end and clean up every index they create', async () => {
+  const groups = (await loadGroups(paths.cases)).filter(group => FAKE_GROUPS.includes(group.group));
+  assert.equal(groups.length, FAKE_GROUPS.length);
   const engine = engineAt('elasticsearch', fake.url);
   const report = await runGroups({ engine, identity: await identify(fake.url), groups, fixturesDir: paths.fixtures, run: 'test0001' });
 

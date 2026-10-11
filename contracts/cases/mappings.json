@@ -1,0 +1,288 @@
+{
+  "group": "mappings",
+  "description": "How undeclared fields are handled (dynamic mapping). Every index is a fresh scratch index.",
+  "fixture": null,
+  "cases": [
+    {
+      "id": "dynamic-false",
+      "capability": "mapping.dynamic",
+      "description": "With dynamic: false an undeclared field is kept in _source but is not searchable.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "dynamic": false,
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "query": {
+              "refresh": "true"
+            },
+            "body": {
+              "title": "Spider-Man",
+              "tagline": "with great power"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_source": {
+                "title": "Spider-Man",
+                "tagline": "with great power"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match": {
+                  "tagline": "power"
+                }
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dynamic-strict",
+      "capability": "mapping.dynamic",
+      "description": "With dynamic: strict a document with an undeclared field is rejected with 400 strict_dynamic_mapping_exception, as in both references.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "dynamic": "strict",
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "query": {
+              "refresh": "true"
+            },
+            "body": {
+              "title": "Spider-Man",
+              "tagline": "with great power"
+            }
+          },
+          "expect": {
+            "status": 400,
+            "body": {
+              "status": 400
+            },
+            "shape": [
+              "error.root_cause[].type",
+              "error.root_cause[].reason",
+              "error.type",
+              "error.reason",
+              "status"
+            ],
+            "error": {
+              "type": "strict_dynamic_mapping_exception"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dynamic-default",
+      "capability": "mapping.dynamic",
+      "description": "Without dynamic, Eloisesearch behaves as dynamic: false (the field stays in _source, not searchable); the references default to true and index the field (D-004).",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}",
+            "body": {
+              "settings": {
+                "number_of_shards": 1,
+                "number_of_replicas": 0
+              },
+              "mappings": {
+                "properties": {
+                  "title": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/{{scratch}}/_doc/1",
+            "query": {
+              "refresh": "true"
+            },
+            "body": {
+              "title": "Spider-Man",
+              "tagline": "with great power"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/{{scratch}}/_doc/1"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "_source": {
+                "title": "Spider-Man",
+                "tagline": "with great power"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/{{scratch}}/_search",
+            "body": {
+              "query": {
+                "match": {
+                  "tagline": "power"
+                }
+              }
+            }
+          },
+          "expect": {
+            "status": 200,
+            "hits": {
+              "total": 0
+            }
+          },
+          "engines": {
+            "elasticsearch": {
+              "expect": {
+                "hits": {
+                  "total": 1,
+                  "ids_exact": [
+                    "1"
+                  ]
+                }
+              },
+              "divergence": "D-004"
+            },
+            "opensearch": {
+              "expect": {
+                "hits": {
+                  "total": 1,
+                  "ids_exact": [
+                    "1"
+                  ]
+                }
+              },
+              "divergence": "D-004"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dynamic-true-explicit",
+      "capability": "mapping.dynamic",
+      "description": "Explicit dynamic: true is rejected by Eloisesearch until type inference exists; the references accept it (D-004).",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+          },
+          "mappings": {
+            "dynamic": true,
+            "properties": {
+              "title": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "illegal_argument_exception"
+        },
+        "body": {
+          "status": 400
+        }
+      },
+      "engines": {
+        "elasticsearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-004"
+        },
+        "opensearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-004"
+        }
+      }
+    }
+  ]
+}
