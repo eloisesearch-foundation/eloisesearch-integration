@@ -1,7 +1,11 @@
-// Tests over the committed contracts: they must validate, and they must run
-// cleanly against the fake engine (which checks the harness, not the references).
+// Tests over the committed contracts: they must validate; the groups that need
+// no fixture must run cleanly against the fake engine (which checks the harness,
+// not the references); and every fixture must load. Search cases need a real
+// engine: they are verified against the references, not here.
 
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { after, before, test } from 'node:test';
 import { loadDivergences, loadGroups, validateGroups } from '../harness/lib/cases.mjs';
 import { engineConfig, identify } from '../harness/lib/engines.mjs';
@@ -21,8 +25,8 @@ test('the committed contracts are valid', async () => {
   assert.deepEqual(validateGroups(groups, await loadDivergences(paths.divergences), await fixtureNames()), []);
 });
 
-test('the committed cases run end to end and clean up every index they create', async () => {
-  const groups = await loadGroups(paths.cases);
+test('the committed fixture-free cases run end to end and clean up every index they create', async () => {
+  const groups = (await loadGroups(paths.cases)).filter(group => group.fixture == null);
   const engine = engineAt('elasticsearch', fake.url);
   const report = await runGroups({ engine, identity: await identify(fake.url), groups, fixturesDir: paths.fixtures, run: 'test0001' });
 
@@ -31,4 +35,19 @@ test('the committed cases run end to end and clean up every index they create', 
   assert.equal(report.summary.pass, groups.reduce((sum, group) => sum + group.cases.length, 0));
   assert.equal(fake.indexes.size, 0, `left behind: ${[...fake.indexes.keys()].join(', ')}`);
   assert.ok(fake.deleted.every(name => name.startsWith('contract-test0001-')));
+});
+
+test('every fixture loads: valid documents, unique ids, the advertised count', async () => {
+  for (const name of await fixtureNames()) {
+    const lines = (await readFile(path.join(paths.fixtures, name, 'documents.ndjson'), 'utf8')).split('\n').filter(Boolean);
+    const ids = lines.map(line => JSON.parse(line)._id);
+    assert.equal(new Set(ids).size, ids.length, `${name}: duplicate _id`);
+
+    const groups = [{ group: 'probe', fixture: name, cases: [
+      { id: `probe-${name}`, capability: 'c', description: 'd', request: { method: 'GET', path: '/{{index}}/_count' }, expect: { body: { count: ids.length } } },
+    ] }];
+    const report = await runGroups({ engine: engineAt('elasticsearch', fake.url), identity: {}, groups, fixturesDir: paths.fixtures, run: 'fixt0001' });
+    assert.deepEqual(report.summary, { pass: 1, fail: 0, error: 0 }, `${name}: ${JSON.stringify(report.cases[0]?.steps)}`);
+  }
+  assert.equal(fake.indexes.size, 0);
 });

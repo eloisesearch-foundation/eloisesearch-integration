@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help test contracts-check changelog-check check \
-	reference-up reference-test reference-report reference-down eloisesearch-test
+	reference-up reference-test reference-report reference-baseline reference-down eloisesearch-test
 
 # Which references the reference-* targets use: REF=elasticsearch or REF=opensearch.
 REF ?= elasticsearch opensearch
@@ -29,6 +29,9 @@ reference-test: ## Run every case against each reference (REF=...)
 
 reference-report: ## Write reports/summary.md from the latest reports
 	node harness/report.mjs
+
+reference-baseline: ## Write contracts/baselines/ from clean reference reports (review the diff)
+	node harness/baseline.mjs
 
 reference-down: ## Stop the references and remove their data
 	$(COMPOSE) down -v --remove-orphans
