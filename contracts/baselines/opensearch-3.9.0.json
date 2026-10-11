@@ -1,0 +1,790 @@
+{
+  "format": 1,
+  "engine": "opensearch",
+  "version": "3.9.0",
+  "cases_passed": 44,
+  "cases": {
+    "documents/bulk-index-in-action": [
+      {
+        "status": 200
+      },
+      {
+        "status": 200,
+        "body": {
+          "errors": false,
+          "items[0].index._index": "contract-{{run}}-bulk-index-in-action",
+          "items[1].index.status": 201
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1",
+          "2"
+        ],
+        "total": {
+          "value": 2,
+          "relation": "eq"
+        }
+      }
+    ],
+    "documents/bulk-mixed-actions": [
+      {
+        "status": 200
+      },
+      {
+        "status": 200,
+        "body": {
+          "errors": true,
+          "items[0].index._id": "1",
+          "items[0].index.status": 201,
+          "items[0].index.result": "created",
+          "items[1].create._id": "2",
+          "items[1].create.status": 201,
+          "items[2].create._id": "1",
+          "items[2].create.status": 409,
+          "items[2].create.error.type": "version_conflict_engine_exception",
+          "items[3].delete._id": "3",
+          "items[3].delete.status": 404,
+          "items[3].delete.result": "not_found"
+        }
+      }
+    ],
+    "documents/create-only-conflict": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201,
+        "body": {
+          "result": "created"
+        }
+      },
+      {
+        "status": 409,
+        "error_type": "version_conflict_engine_exception",
+        "body": {
+          "status": 409
+        }
+      },
+      {
+        "status": 409,
+        "error_type": "version_conflict_engine_exception",
+        "body": {
+          "status": 409
+        }
+      }
+    ],
+    "documents/delete-document": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_id": "1",
+          "result": "deleted",
+          "_version": 2
+        }
+      },
+      {
+        "status": 404,
+        "body": {
+          "found": false
+        }
+      }
+    ],
+    "documents/delete-missing-document": [
+      {
+        "status": 200
+      },
+      {
+        "status": 404,
+        "body": {
+          "_id": "404",
+          "result": "not_found"
+        }
+      }
+    ],
+    "documents/get-document-missing-index": [
+      {
+        "status": 404,
+        "error_type": "index_not_found_exception",
+        "body": {
+          "status": 404
+        }
+      }
+    ],
+    "documents/get-document-realtime": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_index": "contract-{{run}}-get-document-realtime",
+          "_id": "1",
+          "found": true,
+          "_version": 1,
+          "_source": {
+            "title": "Spider-Man",
+            "genres": [
+              "Action"
+            ],
+            "year": 2002
+          }
+        }
+      }
+    ],
+    "documents/get-document-source-filtering": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "year": 2002,
+            "title": "Spider-Man"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "year": 2002,
+            "title": "Spider-Man"
+          }
+        }
+      }
+    ],
+    "documents/get-missing-document": [
+      {
+        "status": 200
+      },
+      {
+        "status": 404,
+        "body": {
+          "_index": "contract-{{run}}-get-missing-document",
+          "_id": "404",
+          "found": false,
+          "error": "(missing)"
+        }
+      }
+    ],
+    "documents/index-document": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201,
+        "body": {
+          "_index": "contract-{{run}}-index-document",
+          "_id": "1",
+          "_version": 1,
+          "result": "created",
+          "_shards.total": 1,
+          "_shards.successful": 1,
+          "_shards.failed": 0
+        }
+      }
+    ],
+    "documents/index-document-generated-id": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201,
+        "body": {
+          "result": "created",
+          "_version": 1,
+          "_id": "string"
+        }
+      }
+    ],
+    "documents/refresh-makes-visible": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "ids": [],
+        "total": {
+          "value": 0,
+          "relation": "eq"
+        }
+      },
+      {
+        "status": 200,
+        "body": {
+          "_shards.failed": 0
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "documents/replace-document": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_id": "1",
+          "_version": 2,
+          "result": "updated"
+        }
+      },
+      {
+        "status": 200,
+        "body": {
+          "found": true,
+          "_version": 2,
+          "_source.title": "Spider-Man 2"
+        }
+      }
+    ],
+    "documents/write-refresh-true": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201,
+        "body": {
+          "forced_refresh": true
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "documents/write-refresh-wait-for": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201,
+        "body": {
+          "result": "created"
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "index-lifecycle/create-existing-index": [
+      {
+        "status": 200
+      },
+      {
+        "status": 400,
+        "error_type": "resource_already_exists_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true,
+          "shards_acknowledged": true,
+          "index": "contract-{{run}}-create-index"
+        }
+      }
+    ],
+    "index-lifecycle/create-index-invalid-name": [
+      {
+        "status": 400,
+        "error_type": "invalid_index_name_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index-malformed-json": [
+      {
+        "status": 400,
+        "error_type": "parse_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index-unknown-field-type": [
+      {
+        "status": 400,
+        "error_type": "mapper_parsing_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index-unknown-setting": [
+      {
+        "status": 400,
+        "error_type": "settings_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/delete-index": [
+      {
+        "status": 200
+      },
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      },
+      {
+        "status": 404,
+        "error_type": "index_not_found_exception",
+        "body": {
+          "status": 404
+        }
+      }
+    ],
+    "index-lifecycle/delete-missing-index": [
+      {
+        "status": 404,
+        "error_type": "index_not_found_exception",
+        "body": {
+          "status": 404
+        }
+      }
+    ],
+    "index-lifecycle/get-index": [
+      {
+        "status": 200
+      },
+      {
+        "status": 200,
+        "body": {
+          "contract-{{run}}-get-index.mappings.properties.title.type": "text",
+          "contract-{{run}}-get-index.mappings.properties.genres.type": "keyword",
+          "contract-{{run}}-get-index.settings.index.number_of_shards": "1",
+          "contract-{{run}}-get-index.settings.index.number_of_replicas": "0"
+        }
+      }
+    ],
+    "index-lifecycle/get-missing-index": [
+      {
+        "status": 404,
+        "error_type": "index_not_found_exception",
+        "body": {
+          "status": 404
+        }
+      }
+    ],
+    "index-lifecycle/head-index": [
+      {
+        "status": 404
+      },
+      {
+        "status": 200
+      },
+      {
+        "status": 200
+      }
+    ],
+    "search/accent-folding": [
+      {
+        "status": 200,
+        "ids": [
+          "194"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/and-operator": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/browse": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635",
+          "557",
+          "559",
+          "24428",
+          "1001",
+          "1003",
+          "1002",
+          "2002",
+          "999",
+          "194",
+          "1006",
+          "1005",
+          "907001",
+          "2001"
+        ],
+        "total": {
+          "value": 15,
+          "relation": "eq"
+        },
+        "aggregations": {
+          "genres": [
+            {
+              "key": "Science Fiction",
+              "doc_count": 6
+            },
+            {
+              "key": "Action",
+              "doc_count": 5
+            },
+            {
+              "key": "Adventure",
+              "doc_count": 4
+            },
+            {
+              "key": "Comedy",
+              "doc_count": 3
+            },
+            {
+              "key": "Drama",
+              "doc_count": 2
+            },
+            {
+              "key": "Animation",
+              "doc_count": 1
+            },
+            {
+              "key": "Family",
+              "doc_count": 1
+            },
+            {
+              "key": "Horror",
+              "doc_count": 1
+            },
+            {
+              "key": "Mystery",
+              "doc_count": 1
+            },
+            {
+              "key": "Romance",
+              "doc_count": 1
+            },
+            {
+              "key": "Thriller",
+              "doc_count": 1
+            }
+          ],
+          "years": [
+            {
+              "key": 1985,
+              "doc_count": 1
+            },
+            {
+              "key": 2000,
+              "doc_count": 3
+            },
+            {
+              "key": 2005,
+              "doc_count": 1
+            },
+            {
+              "key": 2010,
+              "doc_count": 1
+            },
+            {
+              "key": 2015,
+              "doc_count": 3
+            },
+            {
+              "key": 2020,
+              "doc_count": 5
+            },
+            {
+              "key": 2025,
+              "doc_count": 1
+            }
+          ]
+        }
+      }
+    ],
+    "search/count-genre": [
+      {
+        "status": 200,
+        "body": {
+          "count": 3
+        }
+      }
+    ],
+    "search/excluded-term": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "907001",
+          "557",
+          "315635",
+          "559"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/fuzzy": [
+      {
+        "status": 200,
+        "ids": [
+          "24428"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/genre-filter": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/malformed-dangling-exclusion": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/malformed-incomplete-field-group": [
+      {
+        "status": 200,
+        "ids": [
+          "1005",
+          "634649",
+          "907001",
+          "557",
+          "315635",
+          "559"
+        ],
+        "total": {
+          "value": 6,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/malformed-unclosed-quote": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "907001",
+          "557",
+          "315635",
+          "559",
+          "1005"
+        ],
+        "total": {
+          "value": 6,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/minimum-rating": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635",
+          "557",
+          "24428",
+          "1003",
+          "1002",
+          "999",
+          "194",
+          "1006"
+        ],
+        "total": {
+          "value": 9,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/pagination": [
+      {
+        "status": 200,
+        "ids": [
+          "1001",
+          "1003",
+          "1002",
+          "2002",
+          "999"
+        ],
+        "total": {
+          "value": 15,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/plain-query-or": [
+      {
+        "status": 200,
+        "ids": [
+          "1003",
+          "1002",
+          "1001",
+          "634649",
+          "315635"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/quoted-phrase": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/quoted-phrase-exclusion": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 3,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/search-source-filtering": [
+      {
+        "status": 200,
+        "ids": [
+          "634649"
+        ],
+        "total": {
+          "value": 15,
+          "relation": "eq"
+        },
+        "body": {
+          "hits.hits[0]._source": {
+            "year": 2021,
+            "title": "Spider-Man: No Way Home"
+          }
+        }
+      }
+    ],
+    "search/suggestion-prefix": [
+      {
+        "status": 200,
+        "ids": [],
+        "total": {
+          "value": 0,
+          "relation": "eq"
+        },
+        "suggest": {
+          "title_suggest": [
+            "Space Adventure",
+            "Spaceballs",
+            "Spider Horror",
+            "Spider-Man",
+            "Spider-Man 3"
+          ]
+        }
+      }
+    ],
+    "search/wildcard": [
+      {
+        "status": 200,
+        "ids": [
+          "1006"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ]
+  }
+}

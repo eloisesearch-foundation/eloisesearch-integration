@@ -9,9 +9,11 @@ and which will not. This repository answers that with tests that run the same
 HTTP requests against the reference servers and against Eloisesearch, over a
 small, frozen movie corpus, and with the reports those runs produce.
 
-> **Status:** roadmap Phase 0. The reference harness and the first cases (index
-> lifecycle, documents, bulk, refresh) exist; the movie corpus and the search
-> cases come next. See the
+> **Status:** roadmap Phase 0. 44 cases (index lifecycle, documents, bulk,
+> refresh, and the movie-search requests over a frozen corpus) pass against
+> Elasticsearch 9.5.4 and OpenSearch 3.9.0; their reviewed baselines are in
+> `contracts/baselines/`. Eloisesearch runs are report-only until its API
+> exists. See the
 > [roadmap](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md).
 
 ## What lives here

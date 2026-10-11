@@ -42,5 +42,7 @@ changes to the cases, the corpus and the harness that affect what is verified.
 - `make reference-baseline` writes `contracts/baselines/<engine>-<version>.json`
   from clean reference runs: normalized observations without run ids or
   generated values, so a re-run or a reference upgrade shows as a plain diff.
+- Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
+  pass on both; they differ only in D-001 and D-002.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main
