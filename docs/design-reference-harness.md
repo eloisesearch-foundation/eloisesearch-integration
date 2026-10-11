@@ -150,12 +150,14 @@ name. A full-response snapshot is never an expectation.
 
 **Per-engine differences.** A step may carry
 `"engines": {"opensearch": {"expect": {...}, "divergence": "D-003"}}`. The engine's
-`expect` replaces the listed top-level keys for that engine only, and must cite a
-divergence. A case without that block expects the same answer from every engine.
+`expect` replaces the listed top-level keys for that engine only (a key set to
+`null` removes that check), and must cite a divergence. A case without that block expects the same answer from every engine.
 
 ### Divergences
 
-`contracts/divergences.json` records each difference between the references:
+`contracts/divergences.json` records each difference between the references, and
+each intentional difference between Eloisesearch and both references (a
+scope decision such as rejecting a setting the references accept):
 
 ```json
 {

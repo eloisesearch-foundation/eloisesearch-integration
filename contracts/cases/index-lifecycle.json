@@ -493,6 +493,164 @@
           "status"
         ]
       }
+    },
+    {
+      "id": "create-index-one-replica",
+      "capability": "index.settings",
+      "description": "number_of_replicas 1 (the references' default, common in existing mappings) is accepted on a single node.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1
+          },
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    },
+    {
+      "id": "create-index-default-settings",
+      "capability": "index.settings",
+      "description": "Creating an index without shard or replica settings is accepted.",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    },
+    {
+      "id": "create-index-two-shards",
+      "capability": "index.settings",
+      "description": "Eloisesearch is single node with one shard per index and rejects number_of_shards other than 1; the references accept it (D-003).",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "number_of_shards": 2,
+            "number_of_replicas": 0
+          },
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "illegal_argument_exception"
+        },
+        "body": {
+          "status": 400
+        }
+      },
+      "engines": {
+        "elasticsearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-003"
+        },
+        "opensearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-003"
+        }
+      }
+    },
+    {
+      "id": "create-index-two-replicas",
+      "capability": "index.settings",
+      "description": "number_of_replicas above 1 is rejected by Eloisesearch; the references accept it and leave the replicas unassigned (D-003).",
+      "request": {
+        "method": "PUT",
+        "path": "/{{scratch}}",
+        "body": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 2
+          },
+          "mappings": {
+            "properties": {
+              "title": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 400,
+        "error": {
+          "type": "illegal_argument_exception"
+        },
+        "body": {
+          "status": 400
+        }
+      },
+      "engines": {
+        "elasticsearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-003"
+        },
+        "opensearch": {
+          "expect": {
+            "status": 200,
+            "error": null,
+            "body": {
+              "acknowledged": true
+            }
+          },
+          "divergence": "D-003"
+        }
+      }
     }
   ]
 }

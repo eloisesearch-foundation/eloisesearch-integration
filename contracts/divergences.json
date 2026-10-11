@@ -22,5 +22,18 @@
     "decision": "partial",
     "evidence": "First reference run, 2026-10-11: same status and envelope; the type names each engine's JSON parser error.",
     "eloisesearch": "400 with the error envelope; the type is not part of the contract (parser-specific in both references). Clients should branch on the status."
+  },
+  {
+    "id": "D-003",
+    "capability": "index.settings",
+    "cases": [
+      "create-index-two-shards",
+      "create-index-two-replicas"
+    ],
+    "elasticsearch": "200: creates the index with the requested shards and replicas (replicas stay unassigned on one node)",
+    "opensearch": "200: same as Elasticsearch",
+    "decision": "unsupported",
+    "evidence": "Phase 0 scope decision, 2026-10-11: single node, one shard per index; number_of_replicas 0 and 1 are accepted, other values are rejected rather than silently ignored.",
+    "eloisesearch": "400 illegal_argument_exception for number_of_shards other than 1 or number_of_replicas above 1."
   }
 ]
