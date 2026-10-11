@@ -1,0 +1,1844 @@
+{
+  "group": "search",
+  "description": "The movie-search requests of the reference application, over the frozen movies fixture. Expected IDs are derived from the corpus and confirmed against both references; scores are never compared.",
+  "fixture": "movies",
+  "cases": [
+    {
+      "id": "plain-query-or",
+      "capability": "query.simple_query_string",
+      "description": "Plain words use OR: space-only, adventure-only and both-term documents all match, including through the content field.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "space adventure",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "space adventure",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "1001",
+            "1002",
+            "1003",
+            "634649",
+            "315635"
+          ]
+        },
+        "shape": [
+          "hits.total.value",
+          "hits.total.relation",
+          "hits.hits[]._index",
+          "hits.hits[]._id",
+          "hits.hits[]._source",
+          "aggregations.genres.buckets",
+          "aggregations.years.buckets"
+        ]
+      }
+    },
+    {
+      "id": "quoted-phrase",
+      "capability": "query.simple_query_string",
+      "description": "A quoted phrase matches the words in sequence, across the punctuation of Spider-Man; spider-like does not match.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "\"spider man\"",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "\"spider man\"",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "557",
+            "559",
+            "634649",
+            "315635",
+            "907001"
+          ],
+          "ids_exclude": [
+            "1005"
+          ]
+        },
+        "highlight": {
+          "634649": {
+            "title": {
+              "exists": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "and-operator",
+      "capability": "query.simple_query_string",
+      "description": "+ between terms requires both: only the document with space and adventure matches.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "space +adventure",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "space +adventure",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "1003"
+          ]
+        }
+      }
+    },
+    {
+      "id": "excluded-term",
+      "capability": "query.simple_query_string",
+      "description": "-horror excludes the spider document about horror; with an exclusion the positive term stays mandatory (default_operator AND).",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "spider -horror",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "AND",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "spider -horror",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "557",
+            "559",
+            "634649",
+            "315635",
+            "907001"
+          ],
+          "every": [
+            {
+              "fields": [
+                "title",
+                "overview",
+                "content"
+              ],
+              "not_matches": "horror"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "quoted-phrase-exclusion",
+      "capability": "query.simple_query_string",
+      "description": "The positive phrase stays mandatory and every document mentioning Homecoming is excluded, including one that only mentions it.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "\"Spider-Man\" -Homecoming",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "AND",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "\"Spider-Man\" -Homecoming",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "557",
+            "559",
+            "634649"
+          ],
+          "ids_exclude": [
+            "315635",
+            "907001",
+            "2001"
+          ]
+        }
+      }
+    },
+    {
+      "id": "wildcard",
+      "capability": "query.simple_query_string",
+      "description": "A trailing * matches by prefix.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "anim*",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "anim*",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "1006"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fuzzy",
+      "capability": "query.simple_query_string",
+      "description": "~2 allows two edits: avengrs finds The Avengers.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "avengrs~2",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "avengrs~2",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "24428"
+          ]
+        }
+      }
+    },
+    {
+      "id": "accent-folding",
+      "capability": "analysis.asciifolding",
+      "description": "amelie matches Amélie, and the highlight keeps the original accented text.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "amelie",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "amelie",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "194"
+          ]
+        },
+        "highlight": {
+          "194": {
+            "title": {
+              "contains": "<mark>Amélie</mark>"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "genre-filter",
+      "capability": "query.terms",
+      "description": "A terms filter on the genres keyword keeps only Science Fiction among the space matches.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "space",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "space",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": [
+                {
+                  "terms": {
+                    "genres": [
+                      "Science Fiction"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_exact": [
+            "1003"
+          ],
+          "every": [
+            {
+              "field": "genres",
+              "contains": "Science Fiction"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "minimum-rating",
+      "capability": "query.range",
+      "description": "A range filter keeps ratings >= 7, including exactly 7.0 and excluding 6.99; browse order is popularity, then tmdb_id.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match_all": {}
+                }
+              ],
+              "filter": [
+                {
+                  "range": {
+                    "vote_average": {
+                      "gte": 7
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_ordered": [
+            "634649",
+            "315635",
+            "557",
+            "24428",
+            "1003",
+            "1002",
+            "999",
+            "194",
+            "1006"
+          ],
+          "total": 9,
+          "every": [
+            {
+              "field": "vote_average",
+              "gte": 7
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "browse",
+      "capability": "search.sort",
+      "description": "match_all sorted by popularity desc, then tmdb_id asc as a keyword: ties order by string, so 999 sorts after 2002. Facets cover the whole corpus.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match_all": {}
+                }
+              ]
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "total": {
+            "value": 15,
+            "relation": "eq"
+          },
+          "ids_ordered": [
+            "634649",
+            "315635",
+            "557",
+            "559",
+            "24428",
+            "1001",
+            "1003",
+            "1002",
+            "2002",
+            "999",
+            "194",
+            "1006",
+            "1005",
+            "907001",
+            "2001"
+          ],
+          "sorted_by": [
+            {
+              "field": "popularity",
+              "order": "desc"
+            },
+            {
+              "field": "tmdb_id",
+              "order": "asc"
+            }
+          ]
+        },
+        "aggregations": {
+          "genres": [
+            {
+              "key": "Action",
+              "doc_count": 5
+            },
+            {
+              "key": "Adventure",
+              "doc_count": 4
+            },
+            {
+              "key": "Animation",
+              "doc_count": 1
+            },
+            {
+              "key": "Comedy",
+              "doc_count": 3
+            },
+            {
+              "key": "Drama",
+              "doc_count": 2
+            },
+            {
+              "key": "Family",
+              "doc_count": 1
+            },
+            {
+              "key": "Horror",
+              "doc_count": 1
+            },
+            {
+              "key": "Mystery",
+              "doc_count": 1
+            },
+            {
+              "key": "Romance",
+              "doc_count": 1
+            },
+            {
+              "key": "Science Fiction",
+              "doc_count": 6
+            },
+            {
+              "key": "Thriller",
+              "doc_count": 1
+            }
+          ],
+          "years": [
+            {
+              "key": 1985,
+              "doc_count": 1
+            },
+            {
+              "key": 2000,
+              "doc_count": 3
+            },
+            {
+              "key": 2005,
+              "doc_count": 1
+            },
+            {
+              "key": 2010,
+              "doc_count": 1
+            },
+            {
+              "key": 2015,
+              "doc_count": 3
+            },
+            {
+              "key": 2020,
+              "doc_count": 5
+            },
+            {
+              "key": 2025,
+              "doc_count": 1
+            }
+          ]
+        },
+        "shape": [
+          "hits.total.value",
+          "hits.total.relation",
+          "hits.hits[]._index",
+          "hits.hits[]._id",
+          "hits.hits[]._source",
+          "aggregations.genres.buckets",
+          "aggregations.years.buckets"
+        ]
+      }
+    },
+    {
+      "id": "pagination",
+      "capability": "search.from_size",
+      "description": "from and size page through the deterministic browse order.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 5,
+          "size": 5,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match_all": {}
+                }
+              ]
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "total": 15,
+          "ids_ordered": [
+            "1001",
+            "1003",
+            "1002",
+            "2002",
+            "999"
+          ]
+        }
+      }
+    },
+    {
+      "id": "search-source-filtering",
+      "capability": "search.source",
+      "description": "_source includes return only the listed fields.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 1,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match_all": {}
+                }
+              ]
+            }
+          },
+          "sort": [
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          },
+          "_source": {
+            "includes": [
+              "title",
+              "year"
+            ]
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "hits": {
+          "ids_ordered": [
+            "634649"
+          ]
+        },
+        "body": {
+          "hits.hits[0]._source": {
+            "title": "Spider-Man: No Way Home",
+            "year": 2021
+          }
+        }
+      }
+    },
+    {
+      "id": "count-genre",
+      "capability": "search.count",
+      "description": "_count with a filter returns the number of matching documents.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_count",
+        "body": {
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "terms": {
+                    "genres": [
+                      "Comedy"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "id": "suggestion-prefix",
+      "capability": "suggest.completion",
+      "description": "The completion suggester returns Spider-Man for spi, without duplicate texts, at most size options.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "size": 0,
+          "suggest": {
+            "title_suggest": {
+              "prefix": "spi",
+              "completion": {
+                "field": "title.suggest",
+                "size": 5,
+                "skip_duplicates": true,
+                "fuzzy": {
+                  "fuzziness": "AUTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "suggest": {
+          "title_suggest": {
+            "texts_include": [
+              "Spider-Man"
+            ],
+            "unique_texts": true,
+            "max": 5
+          }
+        }
+      }
+    },
+    {
+      "id": "malformed-unclosed-quote",
+      "capability": "query.simple_query_string",
+      "description": "Incomplete user input (\"Spider-Man) with lenient: true is answered with 200, never a 5xx; the matches are recorded by the baseline.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "\"Spider-Man",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "\"Spider-Man",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "shape": [
+          "hits.total.value",
+          "aggregations.genres.buckets"
+        ]
+      }
+    },
+    {
+      "id": "malformed-dangling-exclusion",
+      "capability": "query.simple_query_string",
+      "description": "Incomplete user input (\"Spider-Man\" -) with lenient: true is answered with 200, never a 5xx; the matches are recorded by the baseline.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "\"Spider-Man\" -",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "\"Spider-Man\" -",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "shape": [
+          "hits.total.value",
+          "aggregations.genres.buckets"
+        ]
+      }
+    },
+    {
+      "id": "malformed-incomplete-field-group",
+      "capability": "query.simple_query_string",
+      "description": "Incomplete user input (title:(Spider) with lenient: true is answered with 200, never a 5xx; the matches are recorded by the baseline.",
+      "request": {
+        "method": "POST",
+        "path": "/{{index}}/_search",
+        "body": {
+          "from": 0,
+          "size": 50,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "simple_query_string": {
+                    "query": "title:(Spider",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2",
+                      "content^1"
+                    ],
+                    "default_operator": "OR",
+                    "lenient": true
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "multi_match": {
+                    "query": "title:(Spider",
+                    "type": "phrase",
+                    "fields": [
+                      "title^3",
+                      "short_description^2",
+                      "overview^2"
+                    ],
+                    "slop": 1,
+                    "boost": 2
+                  }
+                }
+              ],
+              "filter": []
+            }
+          },
+          "sort": [
+            {
+              "_score": "desc"
+            },
+            {
+              "popularity": "desc"
+            },
+            {
+              "tmdb_id": "asc"
+            }
+          ],
+          "highlight": {
+            "pre_tags": [
+              "<mark>"
+            ],
+            "post_tags": [
+              "</mark>"
+            ],
+            "fields": {
+              "title": {
+                "number_of_fragments": 0
+              },
+              "short_description": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              },
+              "overview": {
+                "fragment_size": 150,
+                "number_of_fragments": 2
+              }
+            }
+          },
+          "aggs": {
+            "genres": {
+              "terms": {
+                "field": "genres",
+                "size": 15
+              }
+            },
+            "years": {
+              "histogram": {
+                "field": "year",
+                "interval": 5,
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "shape": [
+          "hits.total.value",
+          "aggregations.genres.buckets"
+        ]
+      }
+    }
+  ]
+}

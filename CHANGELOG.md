@@ -33,5 +33,11 @@ changes to the cases, the corpus and the harness that affect what is verified.
 - Frozen `movies` fixture (`contracts/fixtures/movies/`): the movie-search
   application's explicit mapping and 15 documents with fixed IDs, including
   boundary documents for rating filters, sort ties and exclusions.
+- `search` cases over the movies fixture, written as the `_search` and `_count`
+  requests the movie-search application sends: OR and AND semantics, phrases,
+  exclusions, prefix, fuzzy, accent folding, genre and rating filters,
+  deterministic browse order, pagination, `_source` filtering, facets,
+  highlighting, completion suggestions and three incomplete user queries.
+  Expected IDs are derived from the corpus.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main
