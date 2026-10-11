@@ -44,6 +44,9 @@ changes to the cases, the corpus and the harness that affect what is verified.
   generated values, so a re-run or a reference upgrade shows as a plain diff.
 - Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
   pass on both; they differ only in D-001 and D-002.
+- `query-string` cases over the movies fixture (phrases, AND, `+`, exclusions
+  without switching the default operator, field and range syntax, groups,
+  prefix, fuzzy, and two broken queries that must be a 400, never a 5xx).
 - Index settings cases: one shard with 0 or 1 replicas is accepted; more shards
   or replicas are rejected by Eloisesearch while the references accept them
   (D-003, a recorded scope decision). An engine override can now set a key to
