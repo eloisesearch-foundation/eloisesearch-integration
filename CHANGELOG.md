@@ -22,5 +22,9 @@ changes to the cases, the corpus and the harness that affect what is verified.
   filtering, delete, `_create` conflicts, bulk with per-item results, refresh,
   `refresh=true` and `refresh=wait_for`). Expectations are unconfirmed until
   they run against both references.
+- Pinned reference engines (`compose.reference.yml`: Elasticsearch 9.5.4 on
+  port 9200, OpenSearch 3.9.0 on port 9201) with `make reference-up`,
+  `reference-test`, `reference-report` and `reference-down`, and a CI job per
+  reference that uploads its reports.
 
 [Unreleased]: https://github.com/eloisesearch-foundation/eloisesearch-integration/commits/main
