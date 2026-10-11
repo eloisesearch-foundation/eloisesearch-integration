@@ -44,7 +44,8 @@ changes to the cases, the corpus and the harness that affect what is verified.
   generated values, so a re-run or a reference upgrade shows as a plain diff.
 - Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
   pass on both; they differ only in D-001 and D-002. Updated with the
-  `query-string` and settings cases: 61 cases, still only D-001 and D-002.
+  `query-string`, settings, `mappings` and the remaining query cases: 70 cases,
+  still only D-001 and D-002.
 - `mappings` cases for dynamic mapping: `false` and `strict` as in the
   references; without `dynamic`, Eloisesearch behaves as `false` and rejects an
   explicit `true` (D-004, a recorded scope decision).

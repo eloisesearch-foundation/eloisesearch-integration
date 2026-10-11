@@ -80,7 +80,7 @@
     {
       "id": "dynamic-strict",
       "capability": "mapping.dynamic",
-      "description": "With dynamic: strict a document with an undeclared field is rejected with a 400; the error type is recorded by the baseline.",
+      "description": "With dynamic: strict a document with an undeclared field is rejected with 400 strict_dynamic_mapping_exception, as in both references.",
       "steps": [
         {
           "request": {
@@ -125,7 +125,10 @@
               "error.type",
               "error.reason",
               "status"
-            ]
+            ],
+            "error": {
+              "type": "strict_dynamic_mapping_exception"
+            }
           }
         }
       ]

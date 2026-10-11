@@ -2,7 +2,7 @@
   "format": 1,
   "engine": "elasticsearch",
   "version": "9.5.4",
-  "cases_passed": 61,
+  "cases_passed": 70,
   "cases": {
     "documents/bulk-index-in-action": [
       {
@@ -461,6 +461,78 @@
         "status": 200
       }
     ],
+    "mappings/dynamic-default": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "title": "Spider-Man",
+            "tagline": "with great power"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "ids": [
+          "1"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "mappings/dynamic-false": [
+      {
+        "status": 200
+      },
+      {
+        "status": 201
+      },
+      {
+        "status": 200,
+        "body": {
+          "_source": {
+            "title": "Spider-Man",
+            "tagline": "with great power"
+          }
+        }
+      },
+      {
+        "status": 200,
+        "ids": [],
+        "total": {
+          "value": 0,
+          "relation": "eq"
+        }
+      }
+    ],
+    "mappings/dynamic-strict": [
+      {
+        "status": 200
+      },
+      {
+        "status": 400,
+        "error_type": "strict_dynamic_mapping_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "mappings/dynamic-true-explicit": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
     "query-string/qs-and": [
       {
         "status": 200,
@@ -659,6 +731,19 @@
         }
       }
     ],
+    "search/bool-minimum-should-match": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635"
+        ],
+        "total": {
+          "value": 2,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/browse": [
       {
         "status": 200,
@@ -771,6 +856,27 @@
         }
       }
     ],
+    "search/default-size": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "315635",
+          "557",
+          "559",
+          "24428",
+          "1001",
+          "1003",
+          "1002",
+          "2002",
+          "999"
+        ],
+        "total": {
+          "value": 15,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/excluded-term": [
       {
         "status": 200,
@@ -861,6 +967,20 @@
         }
       }
     ],
+    "search/match-operator-and": [
+      {
+        "status": 200,
+        "ids": [
+          "315635",
+          "557",
+          "559"
+        ],
+        "total": {
+          "value": 3,
+          "relation": "eq"
+        }
+      }
+    ],
     "search/minimum-rating": [
       {
         "status": 200,
@@ -877,6 +997,18 @@
         ],
         "total": {
           "value": 9,
+          "relation": "eq"
+        }
+      }
+    ],
+    "search/multi-match-and": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
           "relation": "eq"
         }
       }
@@ -977,6 +1109,18 @@
             "Spider-Man",
             "Spider-Man 3"
           ]
+        }
+      }
+    ],
+    "search/term-keyword-subfield": [
+      {
+        "status": 200,
+        "ids": [
+          "557"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
         }
       }
     ],
