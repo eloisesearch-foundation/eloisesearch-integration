@@ -1030,7 +1030,7 @@
     {
       "id": "qs-malformed-unclosed-quote",
       "capability": "query.query_string",
-      "description": "Unlike simple_query_string, query_string rejects broken syntax (\"Spider-Man) with a 400 and the error envelope, never a 5xx; the error type is recorded by the baseline.",
+      "description": "Unlike simple_query_string, query_string rejects broken syntax (\"Spider-Man) with a 400 and the error envelope, never a 5xx. Both references answer search_phase_execution_exception.",
       "request": {
         "method": "POST",
         "path": "/{{index}}/_search",
@@ -1118,13 +1118,16 @@
           "error.type",
           "error.reason",
           "status"
-        ]
+        ],
+        "error": {
+          "type": "search_phase_execution_exception"
+        }
       }
     },
     {
       "id": "qs-malformed-incomplete-group",
       "capability": "query.query_string",
-      "description": "Unlike simple_query_string, query_string rejects broken syntax (title:(Spider) with a 400 and the error envelope, never a 5xx; the error type is recorded by the baseline.",
+      "description": "Unlike simple_query_string, query_string rejects broken syntax (title:(Spider) with a 400 and the error envelope, never a 5xx. Both references answer search_phase_execution_exception.",
       "request": {
         "method": "POST",
         "path": "/{{index}}/_search",
@@ -1212,7 +1215,10 @@
           "error.type",
           "error.reason",
           "status"
-        ]
+        ],
+        "error": {
+          "type": "search_phase_execution_exception"
+        }
       }
     }
   ]

@@ -43,7 +43,8 @@ changes to the cases, the corpus and the harness that affect what is verified.
   from clean reference runs: normalized observations without run ids or
   generated values, so a re-run or a reference upgrade shows as a plain diff.
 - Reviewed baselines for Elasticsearch 9.5.4 and OpenSearch 3.9.0: all 44 cases
-  pass on both; they differ only in D-001 and D-002.
+  pass on both; they differ only in D-001 and D-002. Updated with the
+  `query-string` and settings cases: 61 cases, still only D-001 and D-002.
 - `query-string` cases over the movies fixture (phrases, AND, `+`, exclusions
   without switching the default operator, field and range syntax, groups,
   prefix, fuzzy, and two broken queries that must be a 400, never a 5xx).

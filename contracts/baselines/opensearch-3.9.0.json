@@ -2,7 +2,7 @@
   "format": 1,
   "engine": "opensearch",
   "version": "3.9.0",
-  "cases_passed": 44,
+  "cases_passed": 61,
   "cases": {
     "documents/bulk-index-in-action": [
       {
@@ -332,6 +332,14 @@
         }
       }
     ],
+    "index-lifecycle/create-index-default-settings": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
     "index-lifecycle/create-index-invalid-name": [
       {
         "status": 400,
@@ -347,6 +355,30 @@
         "error_type": "parse_exception",
         "body": {
           "status": 400
+        }
+      }
+    ],
+    "index-lifecycle/create-index-one-replica": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
+    "index-lifecycle/create-index-two-replicas": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
+        }
+      }
+    ],
+    "index-lifecycle/create-index-two-shards": [
+      {
+        "status": 200,
+        "body": {
+          "acknowledged": true
         }
       }
     ],
@@ -427,6 +459,180 @@
       },
       {
         "status": 200
+      }
+    ],
+    "query-string/qs-and": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-boolean-groups": [
+      {
+        "status": 200,
+        "ids": [
+          "1003",
+          "1006"
+        ],
+        "total": {
+          "value": 2,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-excluded-term": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-field": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "1005",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-fuzzy": [
+      {
+        "status": 200,
+        "ids": [
+          "24428"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-malformed-incomplete-group": [
+      {
+        "status": 400,
+        "error_type": "search_phase_execution_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "query-string/qs-malformed-unclosed-quote": [
+      {
+        "status": 400,
+        "error_type": "search_phase_execution_exception",
+        "body": {
+          "status": 400
+        }
+      }
+    ],
+    "query-string/qs-or": [
+      {
+        "status": 200,
+        "ids": [
+          "1003",
+          "1002",
+          "1001",
+          "634649",
+          "315635"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-phrase": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "907001",
+          "315635",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 5,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-phrase-exclusion": [
+      {
+        "status": 200,
+        "ids": [
+          "557",
+          "559",
+          "634649"
+        ],
+        "total": {
+          "value": 3,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-range": [
+      {
+        "status": 200,
+        "ids": [
+          "634649",
+          "1003",
+          "1002",
+          "1006",
+          "1005",
+          "907001"
+        ],
+        "total": {
+          "value": 6,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-required": [
+      {
+        "status": 200,
+        "ids": [
+          "1003"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
+      }
+    ],
+    "query-string/qs-wildcard": [
+      {
+        "status": 200,
+        "ids": [
+          "1006"
+        ],
+        "total": {
+          "value": 1,
+          "relation": "eq"
+        }
       }
     ],
     "search/accent-folding": [
