@@ -1,6 +1,6 @@
 # Design: reference harness
 
-- **Status:** Draft
+- **Status:** Implemented (Phase 0 closed; the format keeps evolving with new cases)
 - **Date:** 2026-10-11
 - **Roadmap:** Phase 0, "Reference harness" and the fixture items
   ([ROADMAP-MVP.md](https://github.com/eloisesearch-foundation/eloisesearch-workspace/blob/main/docs/ROADMAP-MVP.md))
@@ -34,15 +34,22 @@ Once it exists:
 
 ### Current state
 
-- This repository has only its scaffold (README, AGENTS.md, CHANGELOG, CI running
-  the changelog check).
-- The shared contract of the earlier movie-search prototypes (12 behavior cases
-  and 3 malformed queries over a 12-document corpus) is the functional starting
-  point. It tests the prototypes' own HTTP endpoints and response envelopes, so
-  it cannot be reused as is: its cases are rewritten here as requests in the
-  compatible API (see "Adapting the prototype cases").
-- The references are pinned in the matrix: Elasticsearch 9.5.4 and OpenSearch
-  3.9.0.
+Implemented and in use; this section was updated when Phase 0 closed.
+
+- The harness, the pinned references and the CI jobs exist as described below.
+- 70 cases in five groups (`index-lifecycle`, `documents`, `mappings`, `search`,
+  `query-string`) pass on Elasticsearch 9.5.4 and OpenSearch 3.9.0. Their
+  reviewed baselines are in `contracts/baselines/`; the two baselines differ
+  only in the divergences D-001 and D-002.
+- Four divergences are recorded: two differences between the references
+  (D-001, D-002) and two intentional differences from both (D-003, D-004).
+- The movie-search prototypes' shared contract (12 behavior cases and 3
+  malformed queries over a 12-document corpus) was the functional starting
+  point. It tested the prototypes' own endpoints and envelopes, so its cases were
+  rewritten as requests in the compatible API (see "Adapting the prototype
+  cases").
+- Runs against Eloisesearch are report-only until its API exists; a capability
+  becomes Supported in the matrix only when its cases pass against Eloisesearch.
 
 ### Terms
 
@@ -212,6 +219,7 @@ version it must report, and its readiness check. `ENGINE_URL` overrides the URL.
 make reference-up        start the pinned references and wait until ready
 make reference-test      run every case against each reference
 make reference-report    write reports/summary.md from the latest reports
+make reference-baseline  write contracts/baselines/ from clean reference reports
 make reference-down      stop the references and remove their data
 make check               unit tests, case validation, changelog check
 ```
@@ -242,6 +250,9 @@ references before the cases are committed as passing.
 
 ### Plan
 
+All three steps are done (eloisesearch-integration #1 to #3, with the core and
+workspace companion PRs).
+
 1. **Harness and environment** (`feat/harness`): this design, the runner and its
    unit tests against an in-process fake engine, the pinned Compose file, the
    Make targets and CI jobs, and the first cases: index lifecycle, documents,
@@ -264,18 +275,19 @@ references before the cases are committed as passing.
   services, credentials or data outside this repository; add npm dependencies.
 - **Single-node references** with security disabled, for local and CI use only.
   This setup is not a deployment recommendation.
-- **Images are pinned by version tag.** Pinning by digest is a follow-up once the
-  digests are recorded from a first pull.
+- **Images are pinned by version tag.** Pinning by digest is still open: record
+  the digests from a pull and pin them in `compose.reference.yml`.
 
 ## Validation
 
-- [ ] Unit tests: placeholders, path lookup, every expectation kind (pass and
+- [x] Unit tests: placeholders, path lookup, every expectation kind (pass and
       fail), per-engine overrides requiring a divergence, case-file validation
       (unknown keys, duplicate ids, missing fields), report summary.
-- [ ] An end-to-end unit test runs real case files against an in-process fake
+- [x] An end-to-end unit test runs real case files against an in-process fake
       engine and checks the report, the cleanup of every created index, and the
-      version check.
-- [ ] `make reference-up && make reference-test` passes against both references
+      version check (for the index and document groups, the ones the fake
+      engine implements; every fixture is also loaded and counted).
+- [x] `make reference-up && make reference-test` passes against both references
       locally and in CI, and `make reference-down` leaves nothing running.
-- [ ] Every case that names an expectation was confirmed on both references; any
+- [x] Every case that names an expectation was confirmed on both references; any
       difference is either an engine override with a divergence or a fixed case.

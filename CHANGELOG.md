@@ -8,6 +8,12 @@ changes to the cases, the corpus and the harness that affect what is verified.
 
 ## [Unreleased]
 
+### Changed
+
+- README and the harness design now describe the state at the close of
+  Phase 0 (70 cases, four divergences, validation done) and list
+  `make reference-baseline` among the commands.
+
 ### Added
 
 - Reference harness (Node 22, no dependencies): runs contract cases as HTTP
